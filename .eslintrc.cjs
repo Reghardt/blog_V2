@@ -12,6 +12,8 @@ module.exports = {
   parserOptions: {
     ecmaVersion: "latest",
     sourceType: "module",
+    project: true,
+    tsconfigRootDir: __dirname,
     ecmaFeatures: {
       jsx: true,
     },
@@ -77,8 +79,8 @@ module.exports = {
         },
       },
       extends: [
-        "plugin:@typescript-eslint/recommended",
-        "plugin:@typescript-eslint/stylistic", // TODO: What does this do?
+        "plugin:@typescript-eslint/strict-type-checked",
+        "plugin:@typescript-eslint/stylistic-type-checked", // TODO: What does this do?
         "plugin:import/recommended",
         "plugin:import/typescript",
         "prettier", // TODO: Why add prettier here?

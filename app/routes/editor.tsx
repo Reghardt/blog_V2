@@ -1,5 +1,5 @@
 import { Editor, type OnChange } from "@monaco-editor/react";
-import { ActionFunctionArgs } from "@remix-run/node";
+import { unstable_defineAction as defineAction } from "@remix-run/node";
 import { useFetcher } from "@remix-run/react";
 import { marked } from "marked";
 import { useState } from "react";
@@ -8,14 +8,18 @@ import { Button } from "~/components/spectrum/Button";
 import { turso } from "~/services/turso.server";
 
 export default function MonacoEditor() {
+  // @ts-expect-error error due to single fetch being unstable
   const fetcher = useFetcher();
 
   const [art, setArt] = useState("");
 
-  const handleEditorChange: OnChange = async (value, ev) => {
+  const handleEditorChange: OnChange = (value, _ev) => {
+    console.log(_ev);
     console.log("here is the current model value:", value);
     if (value) {
-      setArt(await marked.parse(value, { async: true }));
+      void marked.parse(value, { async: true }).then((value) => {
+        setArt(value);
+      });
     }
   };
 
@@ -26,7 +30,12 @@ export default function MonacoEditor() {
   return (
     <div className="grid h-[100svh] overflow-hidden">
       <div className="flex bg-gray-900">
-        <Button className={"rounded-none py-1"} onPress={() => saveArticle()}>
+        <Button
+          className={"rounded-none py-1"}
+          onPress={() => {
+            saveArticle();
+          }}
+        >
           Save
         </Button>
       </div>
@@ -49,7 +58,7 @@ export default function MonacoEditor() {
   );
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export const action = defineAction(async ({ request }) => {
   const body = await request.formData();
   body.forEach((value, key) => {
     console.log(value, key);
@@ -62,4 +71,4 @@ export async function action({ request }: ActionFunctionArgs) {
 
   console.log(res);
   return null;
-}
+});
