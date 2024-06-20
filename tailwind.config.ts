@@ -5,5 +5,9 @@ export default {
   theme: {
     extend: {},
   },
-  plugins: [require("@tailwindcss/typography")],
+  plugins: [
+    require("@tailwindcss/typography"),
+    require("tailwindcss-react-aria-components"),
+    require("tailwindcss-animate"),
+  ],
 } satisfies Config;
