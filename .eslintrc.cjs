@@ -94,6 +94,7 @@ module.exports = {
             "newlines-between": "always",
           },
         ],
+        "@typescript-eslint/no-throw-literal": "off",
       },
     },
 

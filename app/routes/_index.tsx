@@ -1,4 +1,5 @@
 import type { MetaFunction } from "@remix-run/node";
+import { Link } from "@remix-run/react";
 
 import { Button } from "~/components/spectrum/Button";
 
@@ -22,6 +23,7 @@ export default function Index() {
       >
         Press me
       </Button>
+      <Link to="editor">Editor Portal</Link>
     </div>
   );
 }

@@ -1,13 +1,13 @@
 import { Editor, type OnChange } from "@monaco-editor/react";
 import { unstable_defineAction as defineAction } from "@remix-run/node";
-import { useFetcher } from "@remix-run/react";
+import { Link, useFetcher } from "@remix-run/react";
 import { marked } from "marked";
 import { useState } from "react";
 
 import { Button } from "~/components/spectrum/Button";
 import { turso } from "~/services/turso.server";
 
-export default function MonacoEditor() {
+export default function Write() {
   // @ts-expect-error error due to single fetch being unstable
   const fetcher = useFetcher();
 
@@ -28,8 +28,16 @@ export default function MonacoEditor() {
   }
 
   return (
-    <div className="grid h-[100svh] overflow-hidden">
+    <div className="grid h-[100svh] grid-rows-[2em_1fr] overflow-hidden">
       <div className="flex bg-gray-900">
+        <Link
+          to=".."
+          relative="path"
+          unstable_viewTransition
+          className="w-12 bg-blue-600 text-center text-white"
+        >
+          Back
+        </Link>
         <Button
           className={"rounded-none py-1"}
           onPress={() => {
