@@ -35,15 +35,15 @@ async function getAdminSession(request: Request) {
   return session;
 }
 
-async function commitAdminSession(
-  session: Session<AdminSessionData, AdminSessionFlashData>,
-) {
-  return {
-    headers: {
-      "Set-Cookie": await commitSession(session),
-    },
-  };
-}
+// async function commitAdminSession(
+//   session: Session<AdminSessionData, AdminSessionFlashData>,
+// ) {
+//   return {
+//     headers: {
+//       "Set-Cookie": await commitSession(session),
+//     },
+//   };
+// }
 
 async function destroyAdminSession(
   session: Session<AdminSessionData, AdminSessionFlashData>,
@@ -55,7 +55,11 @@ async function destroyAdminSession(
   };
 }
 
-export { getAdminSession, commitAdminSession, destroyAdminSession };
+export {
+  getAdminSession,
+  commitSession as commitAdminSession,
+  destroyAdminSession,
+};
 
 /**
  * @example throw await createThrowableAdminErrorMsg(session, "Error message", "url");
