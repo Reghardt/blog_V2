@@ -95,6 +95,7 @@ module.exports = {
           },
         ],
         "@typescript-eslint/no-throw-literal": "off",
+        "@typescript-eslint/no-inferrable-types": "off",
       },
     },
 

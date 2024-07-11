@@ -3,18 +3,14 @@ import {
   unstable_defineAction as defineAction,
 } from "@remix-run/node";
 import { Form } from "@remix-run/react";
-import { Button } from "~/components/spectrum/Button";
 
+import { Button } from "~/components/spectrum/Button";
 import {
   commitAdminSession,
   getAdminSession,
-  getAdminSessionData,
 } from "~/services/adminSession.server";
 
-export const loader = defineLoader(async ({ request }) => {
-  //   console.log("Loader fired");
-  //   const session = await getAdminSession(request);
-  //   await getAdminSessionData(session);
+export const loader = defineLoader(() => {
   return null;
 });
 
