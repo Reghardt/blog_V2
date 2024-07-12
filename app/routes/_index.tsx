@@ -1,19 +1,21 @@
+import { ListBucketsCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
 import type { MetaFunction } from "@remix-run/node";
 import { unstable_defineLoader as defineLoader } from "@remix-run/node";
 import { Await, Link, useLoaderData } from "@remix-run/react";
 import { Suspense } from "react";
 
 import { getArticles } from "~/db/getArticles";
+import { S3Service } from "~/services/s3.server";
 
 export const meta: MetaFunction = () => {
-  return [
-    { title: "Reghardt's Blog" },
-    { name: "description", content: "Welcome to Remix!" },
-  ];
+  return [{ title: "Reghardt's Blog" }, { name: "description", content: "Welcome to Remix!" }];
 };
 
-export const loader = defineLoader(() => {
+export const loader = defineLoader(async () => {
   const articles = getArticles();
+
+  console.log(await S3Service.send(new ListBucketsCommand("")));
+  console.log(await S3Service.send(new ListObjectsV2Command({ Bucket: "rem-blog", Delimiter: "/" })));
   return { articles };
 });
 
