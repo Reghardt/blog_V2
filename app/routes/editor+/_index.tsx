@@ -1,15 +1,10 @@
-import {
-  unstable_defineAction as defineAction,
-  unstable_defineLoader as defineLoader,
-} from "@remix-run/node";
-import { Form, Link, useLoaderData } from "@remix-run/react";
+import { unstable_defineAction as defineAction, unstable_defineLoader as defineLoader } from "@remix-run/node";
+import { Await, Form, Link, useLoaderData } from "@remix-run/react";
+import { Suspense } from "react";
 
 import { Button } from "~/components/spectrum/Button";
-import { selectArticles } from "~/db/selectArticles";
-import {
-  getAdminSession,
-  getAdminSessionData,
-} from "~/services/adminSession.server";
+import { getArticles } from "~/db/getArticles";
+import { getAdminSession, getAdminSessionData } from "~/services/adminSession.server";
 import { turso } from "~/services/turso.server";
 
 export const loader = defineLoader(async ({ request }) => {
@@ -17,8 +12,7 @@ export const loader = defineLoader(async ({ request }) => {
   const session = await getAdminSession(request);
   await getAdminSessionData(session);
 
-  const articles = await selectArticles();
-  console.log(articles);
+  const articles = getArticles();
   return { articles };
 });
 
@@ -29,21 +23,27 @@ export default function Editor() {
     <div className="">
       <div>Editor</div>
       <div>
+        <Link to={"/"}>Home</Link>
         <Form method="post">
           <Button type="submit">Writer</Button>
         </Form>
       </div>
-      <div>
-        {loaderData.articles.map((article) => {
-          return (
-            <div key={article.id} className="bg-gray-300 p-2">
-              <div>ID:{article.id}</div>
-              <div>Title:{article.title}</div>
-              <div>Created:{article.created_at}</div>
-              <Link to={`${article.id}`}>Edit</Link>
-            </div>
-          );
-        })}
+      <div className="flex flex-col gap-2">
+        <Suspense fallback={<div>Loading...</div>}>
+          <Await resolve={loaderData.articles}>
+            {(articles) =>
+              articles.map((article) => {
+                return (
+                  <div key={article.id} className="rounded bg-gray-100 p-2">
+                    <div>{article.title}</div>
+                    <div>{article.created_at}</div>
+                    <Link to={`${article.id}`}>View</Link>
+                  </div>
+                );
+              })
+            }
+          </Await>
+        </Suspense>
       </div>
     </div>
   );

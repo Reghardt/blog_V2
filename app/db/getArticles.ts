@@ -1,13 +1,13 @@
 import { turso } from "~/services/turso.server";
 
-import { zArticle } from "./schemas/articleSchema";
+import { ZArticle } from "./schemas/articleSchema";
 
-export async function selectArticles() {
+export async function getArticles() {
   const res = await turso.execute({
     sql: "SELECT id, created_at, title FROM articles ORDER BY id;",
     args: [],
   });
 
-  const rows = zArticle.omit({ content: true }).array().parse(res.rows);
+  const rows = ZArticle.omit({ content: true }).array().parse(res.rows);
   return rows;
 }
