@@ -5,7 +5,7 @@ import { Await, Link, useLoaderData } from "@remix-run/react";
 import { Suspense } from "react";
 
 import { getArticles } from "~/db/getArticles";
-import { S3Service } from "~/services/s3.server";
+import { S3Service } from "~/services/S3/S3Service.server";
 
 export const meta: MetaFunction = () => {
   return [{ title: "Reghardt's Blog" }, { name: "description", content: "Welcome to Remix!" }];

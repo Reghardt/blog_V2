@@ -9,7 +9,7 @@ export function moveUpOneDirectory(path: string) {
 
   // If path is just '/', return '/'
   if (parts.length === 0) {
-    return "/";
+    return "";
   }
 
   // Remove the last directory in the path
