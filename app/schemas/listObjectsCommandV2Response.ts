@@ -10,3 +10,5 @@ export const ZListObjectsCommandV2Response = z.object({
     .array()
     .optional(),
 });
+
+export type TListObjectsCommandV2Response = z.infer<typeof ZListObjectsCommandV2Response>;

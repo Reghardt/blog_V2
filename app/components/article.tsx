@@ -15,7 +15,7 @@ const Article: FC<{ article: TArticle }> = ({ article }) => {
   console.log(parsedArticleContent);
 
   return (
-    <div className="prose overflow-auto">
+    <div className="prose m-auto overflow-auto p-4 shadow-lg">
       <h1>{article.title}</h1>
       <div
         dangerouslySetInnerHTML={{

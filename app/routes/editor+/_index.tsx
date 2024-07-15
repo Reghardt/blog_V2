@@ -23,7 +23,7 @@ export default function Editor() {
     <div className="">
       <div>Editor</div>
       <div>
-        <Link to={"/"}>Home</Link>
+        <Link to={""}>Home</Link>
         <Form method="post">
           <Button type="submit">Writer</Button>
         </Form>
