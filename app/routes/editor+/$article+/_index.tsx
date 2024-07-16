@@ -45,7 +45,7 @@ export default function FileBrowser() {
 
   const [, setSearchParams] = useSearchParams();
 
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(true);
 
   if (isMinimized) {
     return (
@@ -79,7 +79,7 @@ export default function FileBrowser() {
             </div>
           </Button>
         </div>
-        <div className="h-full w-96 overflow-auto bg-white">
+        <div className="h-full w-96 overflow-auto bg-gray-50 shadow-xl">
           <div className="flex flex-col gap-2 p-2">
             <div>File browser</div>
 

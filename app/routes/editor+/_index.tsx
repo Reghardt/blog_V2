@@ -3,16 +3,16 @@ import { Await, Form, Link, useLoaderData } from "@remix-run/react";
 import { Suspense } from "react";
 
 import { Button } from "~/components/spectrum/Button";
+import { createArticle } from "~/db/createArticle";
 import { getArticles } from "~/db/getArticles";
 import { getAdminSession, getAdminSessionData } from "~/services/adminSession.server";
-import { turso } from "~/services/turso.server";
 
 export const loader = defineLoader(async ({ request }) => {
   console.log("Loader fired");
   const session = await getAdminSession(request);
   await getAdminSessionData(session);
 
-  const articles = getArticles();
+  const articles = getArticles(false);
   return { articles };
 });
 
@@ -23,7 +23,9 @@ export default function Editor() {
     <div className="">
       <div>Editor</div>
       <div>
-        <Link to={""}>Home</Link>
+        <Link relative="route" to={"/"}>
+          Home
+        </Link>
         <Form method="post">
           <Button type="submit">Writer</Button>
         </Form>
@@ -50,10 +52,7 @@ export default function Editor() {
 }
 
 export const action = defineAction(async ({ response }) => {
-  const res = await turso.execute({
-    sql: "INSERT INTO articles (title, content) VALUES (?, ?)",
-    args: ["test", "test"],
-  });
+  const res = await createArticle();
   console.log(res);
   const articleId = res.lastInsertRowid;
 

@@ -3,7 +3,6 @@ import { Editor } from "@monaco-editor/react";
 import { unstable_defineAction as defineAction, unstable_defineLoader as defineLoader } from "@remix-run/node";
 import { Link, Outlet, useFetcher, useLoaderData } from "@remix-run/react";
 import { useEffect, useState } from "react";
-import { TextArea } from "react-aria-components";
 import invariant from "tiny-invariant";
 import { z } from "zod";
 
@@ -48,6 +47,7 @@ export default function Write() {
 
   const [articleTitle, setArticleTitle] = useState(loaderData.article.title);
   const [articleContent, setArticleContent] = useState(loaderData.article.content);
+  const [publish, setPublish] = useState(loaderData.article.publish);
 
   function handleEditorChange(value: string = "") {
     setArticleContent(value);
@@ -58,13 +58,18 @@ export default function Write() {
   }, [loaderData.article.content]);
 
   function saveArticle() {
-    fetcher.submit({ title: articleTitle, content: articleContent }, { method: "POST" });
+    fetcher.submit({ title: articleTitle, content: articleContent, publish: publish }, { method: "POST" });
   }
 
   return (
     <div className="flex h-screen flex-col">
       <div className="flex h-8 bg-gray-200">
-        <Link to=".." relative="path" unstable_viewTransition className="w-12 bg-blue-600 text-center text-white">
+        <Link
+          to=".."
+          relative="path"
+          unstable_viewTransition
+          className="flex w-12 items-center justify-center bg-blue-600 text-sm text-white hover:bg-blue-700 pressed:bg-blue-800"
+        >
           Back
         </Link>
         <Button
@@ -75,16 +80,31 @@ export default function Write() {
         >
           Save
         </Button>
-        <TextArea
+        <input
+          className="px-2"
+          type="text"
           value={articleTitle}
           onChange={(e) => {
             setArticleTitle(e.target.value);
           }}
-        ></TextArea>
+        ></input>
+
+        <div className="flex items-center gap-2 px-2">
+          <input
+            className="h-5 w-5"
+            type="checkbox"
+            id="publish"
+            value={publish}
+            onChange={(e) => {
+              setPublish(+e.target.checked);
+            }}
+          />
+          <label htmlFor="publish">Publish</label>
+        </div>
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        <div className="flex-1 bg-gray-100">
+        <div className="w-[50%] bg-gray-100">
           <Editor
             defaultLanguage="markdown"
             defaultValue={loaderData.article.content}
@@ -93,19 +113,18 @@ export default function Write() {
           />
         </div>
 
-        <div className="flex-1 overflow-auto bg-gray-50">
+        <div className="w-[50%] overflow-auto">
           <Article
             article={{
               id: loaderData.article.id,
               created_at: loaderData.article.created_at,
               title: articleTitle,
               content: articleContent,
+              publish: publish,
             }}
           />
         </div>
       </div>
-
-      {/* <ImageBrowser prefix={loaderData.prefix} listResult={loaderData.listResult}  /> */}
       <Outlet />
     </div>
   );
@@ -115,10 +134,11 @@ export const action = defineAction(async ({ request, params }) => {
   const body = await request.formData();
   const title = z.string().parse(body.get("title"));
   const content = z.string().parse(body.get("content"));
+  const publish = z.coerce.number().min(0).max(1).parse(body.get("publish"));
 
   const articleId = params.article;
   invariant(articleId, "article id undefined");
 
-  await updateArticleById(articleId, title, content);
+  await updateArticleById(articleId, title, content, publish);
   return null;
 });
