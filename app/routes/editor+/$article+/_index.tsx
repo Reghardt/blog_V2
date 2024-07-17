@@ -1,5 +1,5 @@
 import { DeleteObjectCommand, ListObjectsV2Command, PutObjectCommand } from "@aws-sdk/client-s3";
-import { unstable_defineAction as defineAction, unstable_defineLoader as defineLoader } from "@remix-run/node";
+import { ActionFunctionArgs, json, LoaderFunctionArgs } from "@remix-run/node";
 import { Form, useLoaderData, useSearchParams } from "@remix-run/react";
 import { useState } from "react";
 import invariant from "tiny-invariant";
@@ -21,7 +21,7 @@ import { createImageTag } from "~/utils/createImageTag";
 import { moveUpOneDirectory } from "~/utils/moveUpOneDirectory";
 import { uploadFile } from "~/utils/uploadFile";
 
-export const loader = defineLoader(async ({ request }) => {
+export async function loader({ request }: LoaderFunctionArgs) {
   const prefix = new URL(request.url).searchParams.get("prefix") ?? "";
 
   const listResult = ZListObjectsCommandV2Response.parse(
@@ -29,16 +29,16 @@ export const loader = defineLoader(async ({ request }) => {
   );
   console.log(listResult);
 
-  invariant(import.meta.env.VITE_AWS_S3_BUCKET_NAME, "VITE_AWS_S3_BUCKET_NAME undefined");
-  invariant(import.meta.env.VITE_AWS_S3_ENDPOINT, "VITE_AWS_S3_ENDPOINT undefined");
+  invariant(process.env.AWS_S3_BUCKET_NAME, "AWS_S3_BUCKET_NAME undefined");
+  invariant(process.env.AWS_S3_ENDPOINT, "AWS_S3_ENDPOINT undefined");
 
-  return {
+  return json({
     listResult,
     prefix,
-    s3BucketName: import.meta.env.VITE_AWS_S3_BUCKET_NAME,
-    s3Endpoint: import.meta.env.VITE_AWS_S3_ENDPOINT,
-  };
-});
+    s3BucketName: process.env.AWS_S3_BUCKET_NAME,
+    s3Endpoint: process.env.AWS_S3_ENDPOINT,
+  });
+}
 
 export default function FileBrowser() {
   const loaderData = useLoaderData<typeof loader>();
@@ -212,7 +212,7 @@ export default function FileBrowser() {
   );
 }
 
-export const action = defineAction(async ({ request }) => {
+export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
 
   const action = z.string().parse(formData.get("_action"));
@@ -226,24 +226,26 @@ export const action = defineAction(async ({ request }) => {
     await uploadFile(file, prefix, file.name);
   } else if (action === "create_folder") {
     const folderName = z.string().parse(formData.get("folder_name"));
-    invariant(import.meta.env.VITE_AWS_S3_BUCKET_NAME, "VITE_AWS_S3_BUCKET_NAME undefined");
+    invariant(process.env.AWS_S3_BUCKET_NAME, "AWS_S3_BUCKET_NAME undefined");
     await S3Service.send(
       new PutObjectCommand({
         Key: prefix + folderName + "/",
-        Bucket: import.meta.env.VITE_AWS_S3_BUCKET_NAME,
+        Bucket: process.env.AWS_S3_BUCKET_NAME,
         ContentLength: 0,
       }),
     );
   } else if (action === "delete_folder") {
+    invariant(process.env.AWS_S3_BUCKET_NAME, "AWS_S3_BUCKET_NAME undefined");
+
     const commonPrefixToDelete = z.string().parse(formData.get("common_prefix_to_delete"));
     console.log(commonPrefixToDelete);
     const deleteObjectRes = await S3Service.send(
       new DeleteObjectCommand({
         Key: commonPrefixToDelete,
-        Bucket: import.meta.env.VITE_AWS_S3_BUCKET_NAME,
+        Bucket: process.env.AWS_S3_BUCKET_NAME,
       }),
     );
     console.log(deleteObjectRes);
   }
   return null;
-});
+}

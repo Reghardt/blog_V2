@@ -1,20 +1,19 @@
-import { unstable_defineAction as defineAction, unstable_defineLoader as defineLoader } from "@remix-run/node";
-import { Await, Form, Link, useLoaderData } from "@remix-run/react";
-import { Suspense } from "react";
+import { json, LoaderFunctionArgs, redirect } from "@remix-run/node";
+import { Form, Link, useLoaderData } from "@remix-run/react";
 
 import { Button } from "~/components/spectrum/Button";
 import { createArticle } from "~/db/createArticle";
 import { getArticles } from "~/db/getArticles";
 import { getAdminSession, getAdminSessionData } from "~/services/adminSession.server";
 
-export const loader = defineLoader(async ({ request }) => {
+export async function loader({ request }: LoaderFunctionArgs) {
   console.log("Loader fired");
   const session = await getAdminSession(request);
   await getAdminSessionData(session);
 
-  const articles = getArticles(false);
-  return { articles };
-});
+  const articles = await getArticles(false);
+  return json({ articles });
+}
 
 export default function Editor() {
   const loaderData = useLoaderData<typeof loader>();
@@ -31,33 +30,24 @@ export default function Editor() {
         </Form>
       </div>
       <div className="flex flex-col gap-2">
-        <Suspense fallback={<div>Loading...</div>}>
-          <Await resolve={loaderData.articles}>
-            {(articles) =>
-              articles.map((article) => {
-                return (
-                  <div key={article.id} className="rounded bg-gray-100 p-2">
-                    <div>{article.title}</div>
-                    <div>{article.created_at}</div>
-                    <Link to={`${article.id}`}>View</Link>
-                  </div>
-                );
-              })
-            }
-          </Await>
-        </Suspense>
+        {loaderData.articles.map((article) => {
+          return (
+            <div key={article.id} className="rounded bg-gray-100 p-2">
+              <div>{article.title}</div>
+              <div>{article.created_at}</div>
+              <Link to={`${article.id}`}>View</Link>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 }
 
-export const action = defineAction(async ({ response }) => {
+export async function action() {
   const res = await createArticle();
   console.log(res);
   const articleId = res.lastInsertRowid;
 
-  response.status = 302;
-  response.headers.set("Location", `${articleId}`);
-  throw response;
-  return null;
-});
+  throw redirect(`${articleId}`);
+}

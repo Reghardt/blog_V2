@@ -1,18 +1,8 @@
-import {
-  unstable_defineLoader as defineLoader,
-  unstable_defineAction as defineAction,
-} from "@remix-run/node";
+import { ActionFunctionArgs, redirect } from "@remix-run/node";
 import { Form } from "@remix-run/react";
 
 import { Button } from "~/components/spectrum/Button";
-import {
-  commitAdminSession,
-  getAdminSession,
-} from "~/services/adminSession.server";
-
-export const loader = defineLoader(() => {
-  return null;
-});
+import { commitAdminSession, getAdminSession } from "~/services/adminSession.server";
 
 export default function SignIn() {
   return (
@@ -25,14 +15,20 @@ export default function SignIn() {
   );
 }
 
-export const action = defineAction(async ({ request, response }) => {
+export async function action({ request }: ActionFunctionArgs) {
   const adminSession = await getAdminSession(request);
   adminSession.set("admin_id", 100);
 
   console.log("Sign in");
 
-  response.headers.set("Set-Cookie", await commitAdminSession(adminSession));
-  response.status = 302;
-  response.headers.set("Location", "/");
-  throw response;
-});
+  // response.headers.set("Set-Cookie", await commitAdminSession(adminSession));
+  // response.status = 302;
+  // response.headers.set("Location", "/");
+  // throw response;
+
+  throw redirect("/", {
+    headers: {
+      "Set-Cookie": await commitAdminSession(adminSession),
+    },
+  });
+}

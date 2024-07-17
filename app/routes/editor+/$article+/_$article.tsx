@@ -1,6 +1,6 @@
 import { ListObjectsV2Command } from "@aws-sdk/client-s3";
 import { Editor } from "@monaco-editor/react";
-import { unstable_defineAction as defineAction, unstable_defineLoader as defineLoader } from "@remix-run/node";
+import { ActionFunctionArgs, json, LoaderFunctionArgs } from "@remix-run/node";
 import { Link, Outlet, useFetcher, useLoaderData } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import invariant from "tiny-invariant";
@@ -16,7 +16,7 @@ import { S3Service } from "~/services/S3/S3Service.server";
 import { calendarDateToSqliteDate } from "~/utils/calendarDateToSqliteDate";
 import { sqliteDateToCalendarDate } from "~/utils/sqliteDateToCalendarDate";
 
-export const loader = defineLoader(async ({ request, params }) => {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   const article_id = params.article;
   invariant(article_id, "article id undefined");
   const article = await getArticleById(article_id);
@@ -30,22 +30,17 @@ export const loader = defineLoader(async ({ request, params }) => {
   );
   console.log(listResult);
 
-  invariant(import.meta.env.VITE_AWS_S3_BUCKET_NAME, "VITE_AWS_S3_BUCKET_NAME undefined");
-  invariant(import.meta.env.VITE_AWS_S3_ENDPOINT, "VITE_AWS_S3_ENDPOINT undefined");
-
-  return {
+  return json({
     article,
     listResult,
     prefix,
-    s3BucketName: import.meta.env.VITE_AWS_S3_BUCKET_NAME,
-    s3Endpoint: import.meta.env.VITE_AWS_S3_ENDPOINT,
-  };
-});
+    // s3BucketName: import.meta.env.VITE_AWS_S3_BUCKET_NAME,
+    // s3Endpoint: import.meta.env.VITE_AWS_S3_ENDPOINT,
+  });
+}
 
 export default function Write() {
   const loaderData = useLoaderData<typeof loader>();
-
-  // @ts-expect-error single fetch
   const fetcher = useFetcher();
 
   const [articleTitle, setArticleTitle] = useState(loaderData.article.title);
@@ -144,7 +139,7 @@ export default function Write() {
   );
 }
 
-export const action = defineAction(async ({ request, params }) => {
+export async function action({ request, params }: ActionFunctionArgs) {
   const body = await request.formData();
   const title = z.string().parse(body.get("title"));
   const content = z.string().parse(body.get("content"));
@@ -156,4 +151,4 @@ export const action = defineAction(async ({ request, params }) => {
 
   await updateArticleById(articleId, title, content, publish, created_at);
   return null;
-});
+}
