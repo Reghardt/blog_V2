@@ -23,29 +23,31 @@ export default function Index() {
   const loaderData = useLoaderData<typeof loader>();
 
   return (
-    <div className="p-4 font-sans">
-      <div className="flex justify-between">
-        <h1 className="text-3xl">Reghardt&apos;s Blog</h1>
-        <Link className="text-blue-700" to="editor">
-          Editor Portal
-        </Link>
-      </div>
-      <div className="flex flex-col gap-2">
-        <Suspense fallback={<div>Loading...</div>}>
-          <Await resolve={loaderData.articles}>
-            {(articles) =>
-              articles.map((article) => {
-                return (
-                  <div key={article.id} className="rounded bg-gray-100 p-2">
-                    <div>{article.title}</div>
-                    <div>{article.created_at}</div>
-                    <Link to={`article/${article.id}`}>View</Link>
-                  </div>
-                );
-              })
-            }
-          </Await>
-        </Suspense>
+    <div className="flex justify-center">
+      <div className="w-[36em] p-4 font-sans">
+        <div className="flex justify-between">
+          <h1 className="text-3xl">Reghardt&apos;s Blog</h1>
+          <Link className="text-blue-700" to="editor">
+            Editor Portal
+          </Link>
+        </div>
+        <div className="flex flex-col gap-2">
+          <Suspense fallback={<div>Loading...</div>}>
+            <Await resolve={loaderData.articles}>
+              {(articles) =>
+                articles.map((article) => {
+                  return (
+                    <div key={article.id} className="rounded bg-gray-100 p-2">
+                      <div>{article.title}</div>
+                      <div>{article.created_at}</div>
+                      <Link to={`article/${article.id}`}>View</Link>
+                    </div>
+                  );
+                })
+              }
+            </Await>
+          </Suspense>
+        </div>
       </div>
     </div>
   );

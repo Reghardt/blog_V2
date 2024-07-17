@@ -8,12 +8,12 @@ export async function getArticles(onlyPublished: boolean = true) {
   let res: ResultSet | null = null;
   if (onlyPublished) {
     res = await turso.execute({
-      sql: "SELECT id, created_at, title, publish FROM articles WHERE publish = 1 ORDER BY id;",
+      sql: "SELECT id, created_at, title, publish FROM articles WHERE publish = 1 ORDER BY id DESC;",
       args: [],
     });
   } else {
     res = await turso.execute({
-      sql: "SELECT id, created_at, title, publish FROM articles ORDER BY id;",
+      sql: "SELECT id, created_at, title, publish FROM articles ORDER BY id DESC;",
       args: [],
     });
   }

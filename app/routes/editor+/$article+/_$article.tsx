@@ -8,10 +8,13 @@ import { z } from "zod";
 
 import Article from "~/components/article";
 import { Button } from "~/components/spectrum/Button";
+import { DatePicker } from "~/components/spectrum/DatePicker";
 import { getArticleById } from "~/db/getArticleById";
 import { updateArticleById } from "~/db/updateArticleById";
 import { ZListObjectsCommandV2Response } from "~/schemas/listObjectsCommandV2Response";
 import { S3Service } from "~/services/S3/S3Service.server";
+import { calendarDateToSqliteDate } from "~/utils/calendarDateToSqliteDate";
+import { sqliteDateToCalendarDate } from "~/utils/sqliteDateToCalendarDate";
 
 export const loader = defineLoader(async ({ request, params }) => {
   const article_id = params.article;
@@ -48,6 +51,7 @@ export default function Write() {
   const [articleTitle, setArticleTitle] = useState(loaderData.article.title);
   const [articleContent, setArticleContent] = useState(loaderData.article.content);
   const [publish, setPublish] = useState(loaderData.article.publish);
+  const [date, setDate] = useState(sqliteDateToCalendarDate(loaderData.article.created_at));
 
   function handleEditorChange(value: string = "") {
     setArticleContent(value);
@@ -58,7 +62,10 @@ export default function Write() {
   }, [loaderData.article.content]);
 
   function saveArticle() {
-    fetcher.submit({ title: articleTitle, content: articleContent, publish: publish }, { method: "POST" });
+    fetcher.submit(
+      { title: articleTitle, content: articleContent, publish: publish, created_at: calendarDateToSqliteDate(date) },
+      { method: "POST" },
+    );
   }
 
   return (
@@ -94,13 +101,20 @@ export default function Write() {
             className="h-5 w-5"
             type="checkbox"
             id="publish"
-            value={publish}
+            checked={Boolean(publish)}
             onChange={(e) => {
               setPublish(+e.target.checked);
             }}
           />
           <label htmlFor="publish">Publish</label>
         </div>
+
+        <DatePicker
+          value={date}
+          onChange={(newDate) => {
+            setDate(newDate);
+          }}
+        />
       </div>
 
       <div className="flex flex-1 overflow-hidden">
@@ -135,10 +149,11 @@ export const action = defineAction(async ({ request, params }) => {
   const title = z.string().parse(body.get("title"));
   const content = z.string().parse(body.get("content"));
   const publish = z.coerce.number().min(0).max(1).parse(body.get("publish"));
+  const created_at = z.string().parse(body.get("created_at"));
 
   const articleId = params.article;
   invariant(articleId, "article id undefined");
 
-  await updateArticleById(articleId, title, content, publish);
+  await updateArticleById(articleId, title, content, publish, created_at);
   return null;
 });
