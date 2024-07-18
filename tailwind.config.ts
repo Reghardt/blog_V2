@@ -7,7 +7,7 @@ export default {
   },
   plugins: [
     require("@tailwindcss/typography"),
-    require("tailwindcss-react-aria-components"),
-    require("tailwindcss-animate"),
+    // require("tailwindcss-react-aria-components"),
+    // require("tailwindcss-animate"),
   ],
 } satisfies Config;

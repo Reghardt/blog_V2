@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const MAX_UPLOAD_SIZE = 1024 * 1024 * 3; // 3MB
+const MAX_UPLOAD_SIZE = 1024 * 1024 * 50; // 3MB
 const ACCEPTED_FILE_TYPES = ["image/png", "image/jpeg", "image/jpg"];
 
 export const ZFormFileInputSchema = z

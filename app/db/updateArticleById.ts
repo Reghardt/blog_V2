@@ -4,11 +4,11 @@ export async function updateArticleById(
   articleId: string,
   title: string,
   content: string,
-  publish: number,
+  published: number,
   createdAt: string,
 ) {
   await turso.execute({
-    sql: "UPDATE articles SET title = ?, content = ?, publish = ?, created_at = ? WHERE id = ?;",
-    args: [title, content, publish, createdAt, articleId],
+    sql: "UPDATE articles SET title = ?, content = ?, published = ?, created_at = ? WHERE id = ?;",
+    args: [title, content, published, createdAt, articleId],
   });
 }

@@ -5,7 +5,8 @@ export const ZArticle = z.object({
   created_at: z.string().date(),
   title: z.string(),
   content: z.string(),
-  publish: z.number().min(0).max(1),
+  published: z.number().min(0).max(1),
+  views: z.number().min(0),
 });
 
 export type TArticle = z.infer<typeof ZArticle>;

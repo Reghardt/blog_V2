@@ -12,8 +12,6 @@ const Article: FC<{ article: TArticle }> = ({ article }) => {
     })();
   }, [article]);
 
-  console.log(parsedArticleContent);
-
   return (
     <div className="prose m-auto overflow-auto p-4 shadow-lg">
       <h1>{article.title}</h1>

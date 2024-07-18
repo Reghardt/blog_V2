@@ -22,20 +22,14 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const article = await getArticleById(article_id);
 
   const prefix = new URL(request.url).searchParams.get("prefix") ?? "";
-  // console.log(await S3Service.send(new ListBucketsCommand("")));
-  // console.log(await S3Service.send(new ListObjectsV2Command({ Bucket: "rem-blog", Delimiter: "/" })));
-
   const listResult = ZListObjectsCommandV2Response.parse(
     await S3Service.send(new ListObjectsV2Command({ Bucket: "rem-blog", Delimiter: "/", Prefix: prefix })),
   );
-  console.log(listResult);
 
   return json({
     article,
     listResult,
     prefix,
-    // s3BucketName: import.meta.env.VITE_AWS_S3_BUCKET_NAME,
-    // s3Endpoint: import.meta.env.VITE_AWS_S3_ENDPOINT,
   });
 }
 
@@ -45,7 +39,7 @@ export default function Write() {
 
   const [articleTitle, setArticleTitle] = useState(loaderData.article.title);
   const [articleContent, setArticleContent] = useState(loaderData.article.content);
-  const [publish, setPublish] = useState(loaderData.article.publish);
+  const [published, setPublished] = useState(loaderData.article.published);
   const [date, setDate] = useState(sqliteDateToCalendarDate(loaderData.article.created_at));
 
   function handleEditorChange(value: string = "") {
@@ -58,7 +52,7 @@ export default function Write() {
 
   function saveArticle() {
     fetcher.submit(
-      { title: articleTitle, content: articleContent, publish: publish, created_at: calendarDateToSqliteDate(date) },
+      { title: articleTitle, content: articleContent, published, created_at: calendarDateToSqliteDate(date) },
       { method: "POST" },
     );
   }
@@ -96,9 +90,9 @@ export default function Write() {
             className="h-5 w-5"
             type="checkbox"
             id="publish"
-            checked={Boolean(publish)}
+            checked={Boolean(published)}
             onChange={(e) => {
-              setPublish(+e.target.checked);
+              setPublished(+e.target.checked);
             }}
           />
           <label htmlFor="publish">Publish</label>
@@ -129,7 +123,8 @@ export default function Write() {
               created_at: loaderData.article.created_at,
               title: articleTitle,
               content: articleContent,
-              publish: publish,
+              published: published,
+              views: loaderData.article.views,
             }}
           />
         </div>
@@ -143,12 +138,12 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const body = await request.formData();
   const title = z.string().parse(body.get("title"));
   const content = z.string().parse(body.get("content"));
-  const publish = z.coerce.number().min(0).max(1).parse(body.get("publish"));
+  const published = z.coerce.number().min(0).max(1).parse(body.get("published"));
   const created_at = z.string().parse(body.get("created_at"));
 
   const articleId = params.article;
   invariant(articleId, "article id undefined");
 
-  await updateArticleById(articleId, title, content, publish, created_at);
+  await updateArticleById(articleId, title, content, published, created_at);
   return null;
 }

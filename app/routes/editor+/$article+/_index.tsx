@@ -27,7 +27,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const listResult = ZListObjectsCommandV2Response.parse(
     await S3Service.send(new ListObjectsV2Command({ Bucket: "rem-blog", Delimiter: "/", Prefix: prefix })),
   );
-  console.log(listResult);
 
   invariant(process.env.AWS_S3_BUCKET_NAME, "AWS_S3_BUCKET_NAME undefined");
   invariant(process.env.AWS_S3_ENDPOINT, "AWS_S3_ENDPOINT undefined");
@@ -221,7 +220,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   if (action === "upload_file") {
     const file = ZFormFileInputSchema.parse(formData.get("user_document"));
-    console.log(file);
 
     await uploadFile(file, prefix, file.name);
   } else if (action === "create_folder") {
@@ -238,7 +236,6 @@ export async function action({ request }: ActionFunctionArgs) {
     invariant(process.env.AWS_S3_BUCKET_NAME, "AWS_S3_BUCKET_NAME undefined");
 
     const commonPrefixToDelete = z.string().parse(formData.get("common_prefix_to_delete"));
-    console.log(commonPrefixToDelete);
     const deleteObjectRes = await S3Service.send(
       new DeleteObjectCommand({
         Key: commonPrefixToDelete,
