@@ -3,6 +3,7 @@ import { Link, useLoaderData } from "@remix-run/react";
 import invariant from "tiny-invariant";
 
 import Article from "~/components/article";
+import BackArrowIcon from "~/components/icons/backArrowIcon";
 import { getArticleById } from "~/db/getArticleById";
 import { incrementArticleViews } from "~/db/incrementArticleViews";
 
@@ -22,10 +23,17 @@ export default function ArticleId() {
 
   return (
     <div className="">
-      <div>
-        <Link to={"/"}>{"< Back"}</Link>
-      </div>
-      <Article article={loaderData.article} />
+      <Article
+        article={loaderData.article}
+        header={
+          <div>
+            <Link to={"/"} className="flex items-baseline gap-2 text-blue-700 no-underline">
+              <BackArrowIcon />
+              <div>Back</div>
+            </Link>
+          </div>
+        }
+      />
     </div>
   );
 }

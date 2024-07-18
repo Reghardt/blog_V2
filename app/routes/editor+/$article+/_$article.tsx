@@ -1,8 +1,7 @@
 import { ListObjectsV2Command } from "@aws-sdk/client-s3";
-import { Editor } from "@monaco-editor/react";
 import { ActionFunctionArgs, json, LoaderFunctionArgs } from "@remix-run/node";
 import { Link, Outlet, useFetcher, useLoaderData } from "@remix-run/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import invariant from "tiny-invariant";
 import { z } from "zod";
 
@@ -42,6 +41,8 @@ export default function Write() {
   const [published, setPublished] = useState(loaderData.article.published);
   const [date, setDate] = useState(sqliteDateToCalendarDate(loaderData.article.created_at));
 
+  const editorRef = useRef<HTMLDivElement>(null);
+
   function handleEditorChange(value: string = "") {
     setArticleContent(value);
   }
@@ -64,7 +65,7 @@ export default function Write() {
           to=".."
           relative="path"
           unstable_viewTransition
-          className="flex w-12 items-center justify-center bg-blue-600 text-sm text-white hover:bg-blue-700 pressed:bg-blue-800"
+          className="pressed:bg-blue-800 flex w-12 items-center justify-center bg-blue-600 text-sm text-white hover:bg-blue-700"
         >
           Back
         </Link>
@@ -107,13 +108,25 @@ export default function Write() {
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        <div className="w-[50%] bg-gray-100">
-          <Editor
+        <div className="w-[50%] bg-gray-100" ref={editorRef}>
+          <textarea
+            className="h-full w-full bg-gray-800 p-1 text-white"
+            defaultValue={loaderData.article.content}
+            onChange={(c) => {
+              setArticleContent(c.target.value);
+            }}
+          />
+          {/* <Editor
             defaultLanguage="markdown"
             defaultValue={loaderData.article.content}
             theme="vs-dark"
             onChange={handleEditorChange}
-          />
+            options={{}}
+            onMount={() => {
+              console.log("Mounted");
+              delayChildren();
+            }}
+          /> */}
         </div>
 
         <div className="w-[50%] overflow-auto">

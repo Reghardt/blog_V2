@@ -1,12 +1,4 @@
-import {
-  Links,
-  Meta,
-  Outlet,
-  Scripts,
-  ScrollRestoration,
-  useNavigate,
-  useHref,
-} from "@remix-run/react";
+import { Links, Meta, Outlet, Scripts, ScrollRestoration, useNavigate, useHref } from "@remix-run/react";
 import { RouterProvider } from "react-aria-components";
 import type { NavigateOptions } from "react-router-dom";
 import "./tailwind.css";
@@ -28,7 +20,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body className="h-full">
+      <body className="h-full" style={{ scrollbarGutter: "stable" }}>
         <RouterProvider navigate={navigate} useHref={useHref}>
           {children}
         </RouterProvider>
