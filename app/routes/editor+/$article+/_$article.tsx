@@ -127,7 +127,7 @@ export default function Write() {
           <div className="w-[50%] bg-gray-100" ref={editorRef}>
             <textarea
               className="h-full w-full bg-gray-800 p-1 text-white"
-              defaultValue={loaderData.article.content}
+              value={articleContent}
               onChange={(c) => {
                 setArticleContent(c.target.value);
               }}
