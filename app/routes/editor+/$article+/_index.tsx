@@ -1,6 +1,6 @@
 import { DeleteObjectCommand, ListObjectsV2Command, PutObjectCommand } from "@aws-sdk/client-s3";
 import { ActionFunctionArgs, json, LoaderFunctionArgs } from "@remix-run/node";
-import { Form, useLoaderData, useSearchParams } from "@remix-run/react";
+import { Form, useLoaderData, useOutletContext, useSearchParams } from "@remix-run/react";
 import { useState } from "react";
 import invariant from "tiny-invariant";
 import { z } from "zod";
@@ -40,6 +40,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function FileBrowser() {
+  const myValue = useOutletContext();
+  console.log(myValue);
   const loaderData = useLoaderData<typeof loader>();
 
   const [, setSearchParams] = useSearchParams();

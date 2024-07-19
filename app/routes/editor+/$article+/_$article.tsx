@@ -1,7 +1,8 @@
 import { ListObjectsV2Command } from "@aws-sdk/client-s3";
 import { ActionFunctionArgs, json, LoaderFunctionArgs } from "@remix-run/node";
 import { Link, Outlet, useFetcher, useLoaderData } from "@remix-run/react";
-import { useEffect, useRef, useState } from "react";
+import { produce } from "immer";
+import { useRef, useState } from "react";
 import invariant from "tiny-invariant";
 import { z } from "zod";
 
@@ -40,16 +41,17 @@ export default function Write() {
   const [articleContent, setArticleContent] = useState(loaderData.article.content);
   const [published, setPublished] = useState(loaderData.article.published);
   const [date, setDate] = useState(sqliteDateToCalendarDate(loaderData.article.created_at));
+  const [mobileZLevels, setMobileZLevels] = useState<[number, number, number, number]>([3, 2, 1, 0]);
 
-  const editorRef = useRef<HTMLDivElement>(null);
-
-  function handleEditorChange(value: string = "") {
-    setArticleContent(value);
+  function incMobileZLevel(index: number) {
+    setMobileZLevels(
+      produce(mobileZLevels, (draft) => {
+        draft[index] = Math.max(...mobileZLevels) + 1;
+      }),
+    );
   }
 
-  useEffect(() => {
-    handleEditorChange(loaderData.article.content);
-  }, [loaderData.article.content]);
+  const editorRef = useRef<HTMLDivElement>(null);
 
   function saveArticle() {
     fetcher.submit(
@@ -59,91 +61,192 @@ export default function Write() {
   }
 
   return (
-    <div className="flex h-screen flex-col">
-      <div className="flex h-8 bg-gray-200">
-        <Link
-          to=".."
-          relative="path"
-          unstable_viewTransition
-          className="pressed:bg-blue-800 flex w-12 items-center justify-center bg-blue-600 text-sm text-white hover:bg-blue-700"
-        >
-          Back
-        </Link>
-        <Button
-          className={"rounded-none py-1"}
-          onPress={() => {
-            saveArticle();
-          }}
-        >
-          Save
-        </Button>
-        <input
-          className="px-2"
-          type="text"
-          value={articleTitle}
-          onChange={(e) => {
-            setArticleTitle(e.target.value);
-          }}
-        ></input>
-
-        <div className="flex items-center gap-2 px-2">
+    <>
+      <div className="hidden h-screen flex-col lg:flex">
+        <div className="flex h-8 bg-gray-200">
+          <Link
+            to=".."
+            relative="path"
+            unstable_viewTransition
+            className="pressed:bg-blue-800 flex w-12 items-center justify-center bg-blue-600 text-sm text-white hover:bg-blue-700"
+          >
+            Back
+          </Link>
+          <Button
+            className={"rounded-none py-1"}
+            onPress={() => {
+              saveArticle();
+            }}
+          >
+            Save
+          </Button>
           <input
-            className="h-5 w-5"
-            type="checkbox"
-            id="publish"
-            checked={Boolean(published)}
+            className="px-2"
+            type="text"
+            value={articleTitle}
             onChange={(e) => {
-              setPublished(+e.target.checked);
+              setArticleTitle(e.target.value);
+            }}
+          ></input>
+
+          <div className="flex items-center gap-2 px-2">
+            <input
+              className="h-5 w-5"
+              type="checkbox"
+              id="publish"
+              checked={Boolean(published)}
+              onChange={(e) => {
+                setPublished(+e.target.checked);
+              }}
+            />
+            <label htmlFor="publish">Publish</label>
+          </div>
+
+          <DatePicker
+            value={date}
+            onChange={(newDate) => {
+              setDate(newDate);
             }}
           />
-          <label htmlFor="publish">Publish</label>
         </div>
 
-        <DatePicker
-          value={date}
-          onChange={(newDate) => {
-            setDate(newDate);
-          }}
-        />
+        <div className="flex flex-1 overflow-hidden">
+          <div className="w-[50%] bg-gray-100" ref={editorRef}>
+            <textarea
+              className="h-full w-full bg-gray-800 p-1 text-white"
+              defaultValue={loaderData.article.content}
+              onChange={(c) => {
+                setArticleContent(c.target.value);
+              }}
+            />
+          </div>
+
+          <div className="w-[50%] overflow-auto">
+            <Article
+              article={{
+                id: loaderData.article.id,
+                created_at: loaderData.article.created_at,
+                title: articleTitle,
+                content: articleContent,
+                published: published,
+                views: loaderData.article.views,
+              }}
+            />
+          </div>
+        </div>
+        <Outlet />
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
-        <div className="w-[50%] bg-gray-100" ref={editorRef}>
+      <div className="lg:hidden">
+        <div className="h-[5svh]">
+          <Button
+            onPress={() => {
+              incMobileZLevel(0);
+            }}
+          >
+            Edit
+          </Button>
+          <Button
+            onPress={() => {
+              incMobileZLevel(1);
+            }}
+          >
+            View
+          </Button>
+
+          <Button
+            onPress={() => {
+              incMobileZLevel(2);
+            }}
+          >
+            Options
+          </Button>
+
+          <Button
+            onPress={() => {
+              incMobileZLevel(3);
+            }}
+          >
+            Images
+          </Button>
+        </div>
+
+        <div className="overflow-hidden">
           <textarea
-            className="h-full w-full bg-gray-800 p-1 text-white"
+            className="absolute h-[95svh] w-full overflow-auto bg-gray-700 p-1 text-white"
+            style={{ zIndex: mobileZLevels[0] }}
             defaultValue={loaderData.article.content}
             onChange={(c) => {
               setArticleContent(c.target.value);
             }}
           />
-          {/* <Editor
-            defaultLanguage="markdown"
-            defaultValue={loaderData.article.content}
-            theme="vs-dark"
-            onChange={handleEditorChange}
-            options={{}}
-            onMount={() => {
-              console.log("Mounted");
-              delayChildren();
-            }}
-          /> */}
-        </div>
 
-        <div className="w-[50%] overflow-auto">
-          <Article
-            article={{
-              id: loaderData.article.id,
-              created_at: loaderData.article.created_at,
-              title: articleTitle,
-              content: articleContent,
-              published: published,
-              views: loaderData.article.views,
-            }}
-          />
+          <div className="absolute h-[95svh] w-full overflow-auto bg-white" style={{ zIndex: mobileZLevels[1] }}>
+            <Article
+              article={{
+                id: loaderData.article.id,
+                created_at: loaderData.article.created_at,
+                title: articleTitle,
+                content: articleContent,
+                published: published,
+                views: loaderData.article.views,
+              }}
+            />
+          </div>
+
+          <div className="absolute h-[95svh] w-full bg-white" style={{ zIndex: mobileZLevels[2] }}>
+            <Link
+              to=".."
+              relative="path"
+              unstable_viewTransition
+              className="pressed:bg-blue-800 flex w-12 items-center justify-center bg-blue-600 text-sm text-white hover:bg-blue-700"
+            >
+              Back
+            </Link>
+            <Button
+              className={"rounded-none py-1"}
+              onPress={() => {
+                saveArticle();
+              }}
+            >
+              Save
+            </Button>
+            <input
+              className="px-2"
+              type="text"
+              value={articleTitle}
+              onChange={(e) => {
+                setArticleTitle(e.target.value);
+              }}
+            ></input>
+
+            <div className="flex items-center gap-2 px-2">
+              <input
+                className="h-5 w-5"
+                type="checkbox"
+                id="publish"
+                checked={Boolean(published)}
+                onChange={(e) => {
+                  setPublished(+e.target.checked);
+                }}
+              />
+              <label htmlFor="publish">Publish</label>
+            </div>
+
+            <DatePicker
+              value={date}
+              onChange={(newDate) => {
+                setDate(newDate);
+              }}
+            />
+          </div>
+
+          <div className="absolute h-[95svh] w-full bg-white" style={{ zIndex: mobileZLevels[3] }}>
+            <Outlet context={{ test: true }} />
+          </div>
         </div>
       </div>
-      <Outlet />
-    </div>
+    </>
   );
 }
 
