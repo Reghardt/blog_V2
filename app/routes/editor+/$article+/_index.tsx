@@ -40,18 +40,19 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function FileBrowser() {
-  const myValue = useOutletContext();
-  console.log(myValue);
+  const outletContext = useOutletContext();
+  console.log(outletContext);
+  const parsedOutletContext = z.object({ isMinimized: z.boolean() }).optional().parse(outletContext);
+  const isMinimized = parsedOutletContext?.isMinimized ?? true;
+
   const loaderData = useLoaderData<typeof loader>();
-
   const [, setSearchParams] = useSearchParams();
-
-  const [isMinimized, setIsMinimized] = useState(true);
+  // const [isMinimized, setIsMinimized] = useState(true);
 
   if (isMinimized) {
     return (
       <div className="fixed right-0 top-0 flex h-8 justify-end">
-        <Button
+        {/* <Button
           className={"flex h-8 w-12 items-center justify-center rounded-none p-0"}
           onPress={() => {
             setIsMinimized(!isMinimized);
@@ -60,153 +61,131 @@ export default function FileBrowser() {
           <div>
             <PlusIcon />
           </div>
-        </Button>
+        </Button> */}
       </div>
     );
   }
 
   return (
-    <div className="fixed right-0 top-0 flex h-[96%] justify-end">
-      <div>
-        <div className="flex justify-end">
+    <div className="h-full w-full overflow-auto bg-white shadow-xl">
+      <div className="flex flex-col gap-2 p-2">
+        <div>File browser</div>
+
+        <div>
           <Button
-            className={"flex h-8 w-12 items-center justify-center rounded-none p-0"}
+            className={"p-1 px-2"}
             onPress={() => {
-              setIsMinimized(!isMinimized);
+              setSearchParams((prev) => {
+                prev.set("prefix", moveUpOneDirectory(loaderData.prefix));
+                return prev;
+              });
             }}
           >
-            <div>
-              <MinusIcon />
+            <div className="flex items-center gap-2">
+              <LeftArrowIcon />
+              Back
             </div>
           </Button>
         </div>
-        <div className="h-full w-96 overflow-auto bg-gray-50 shadow-xl">
-          <div className="flex flex-col gap-2 p-2">
-            <div>File browser</div>
 
-            <div>
+        <div>Path: {loaderData.prefix ? loaderData.prefix : ""}</div>
+
+        <Form
+          method="post"
+          encType="multipart/form-data"
+          className="border-1 flex flex-col gap-2 rounded border border-blue-400 p-2 px-2"
+        >
+          <input required type="file" name="user_document" />
+          <Button name="_action" value={"upload_file"} type="submit" className={"p-1 px-2"}>
+            <div className="flex items-center gap-2">
+              <UploadIcon />
+              Upload
+            </div>
+          </Button>
+        </Form>
+
+        <Form method="post" className="border-1 flex flex-col gap-2 rounded border border-blue-400 p-2">
+          <input className="border" required type="text" name="folder_name" />
+          <Button name="_action" value={"create_folder"} type="submit" className={"p-1 px-2"}>
+            <div className="flex items-center gap-2">
+              <CreateFolderIcon />
+              Create folder
+            </div>
+          </Button>
+        </Form>
+        {loaderData.listResult.CommonPrefixes?.map((commonPrefix, index) => {
+          return (
+            <div key={index} className="flex items-center gap-2">
               <Button
-                className={"p-1 px-2"}
+                variant="secondary"
                 onPress={() => {
                   setSearchParams((prev) => {
-                    prev.set("prefix", moveUpOneDirectory(loaderData.prefix));
+                    prev.set("prefix", commonPrefix.Prefix);
                     return prev;
                   });
                 }}
               >
                 <div className="flex items-center gap-2">
-                  <LeftArrowIcon />
-                  Back
+                  <FolderIcon />
+                  {commonPrefix.Prefix.replace(loaderData.prefix, "")}
                 </div>
               </Button>
+              <Form method="post">
+                <Button type="submit" variant="destructive" className={"p-0"} name="_action" value={"delete_folder"}>
+                  <DeleteIcon />
+                </Button>
+                <input type="hidden" name="common_prefix_to_delete" value={commonPrefix.Prefix} />
+              </Form>
             </div>
+          );
+        })}
 
-            <div>Path: {loaderData.prefix ? loaderData.prefix : ""}</div>
-
-            <Form
-              method="post"
-              encType="multipart/form-data"
-              className="border-1 flex flex-col gap-2 rounded border border-blue-400 p-2 px-2"
-            >
-              <input required type="file" name="user_document" />
-              <Button name="_action" value={"upload_file"} type="submit" className={"p-1 px-2"}>
-                <div className="flex items-center gap-2">
-                  <UploadIcon />
-                  Upload
-                </div>
-              </Button>
-            </Form>
-
-            <Form method="post" className="border-1 flex flex-col gap-2 rounded border border-blue-400 p-2">
-              <input className="border" required type="text" name="folder_name" />
-              <Button name="_action" value={"create_folder"} type="submit" className={"p-1 px-2"}>
-                <div className="flex items-center gap-2">
-                  <CreateFolderIcon />
-                  Create folder
-                </div>
-              </Button>
-            </Form>
-            {loaderData.listResult.CommonPrefixes?.map((commonPrefix, index) => {
+        <div className="flex flex-col gap-4">
+          {loaderData.listResult.Contents?.map((content, index) => {
+            if (content.Size > 0) {
               return (
-                <div key={index} className="flex items-center gap-2">
-                  <Button
-                    variant="secondary"
-                    onPress={() => {
-                      setSearchParams((prev) => {
-                        prev.set("prefix", commonPrefix.Prefix);
-                        return prev;
-                      });
-                    }}
-                  >
+                <div key={index} className="flex flex-col gap-2 rounded shadow-md">
+                  <img
+                    width={"100%"}
+                    height={"auto"}
+                    alt="uploaded by user"
+                    src={loaderData.s3Endpoint + "/" + loaderData.s3BucketName + "/" + content.Key}
+                  />
+
+                  <div className="flex w-full items-center justify-between text-center">
                     <div className="flex items-center gap-2">
-                      <FolderIcon />
-                      {commonPrefix.Prefix.replace(loaderData.prefix, "")}
+                      <Button
+                        className={"p-1 px-2"}
+                        onPress={() => {
+                          void navigator.clipboard.writeText(
+                            createImageTag(loaderData.s3Endpoint, loaderData.s3BucketName, content.Key),
+                          );
+                        }}
+                      >
+                        <div className="flex items-center gap-2">
+                          <CopyIcon />
+                          Copy
+                        </div>
+                      </Button>
+                      <div>{content.Key.replace(loaderData.prefix, "")}</div>
                     </div>
-                  </Button>
-                  <Form method="post">
-                    <Button
-                      type="submit"
-                      variant="destructive"
-                      className={"p-0"}
-                      name="_action"
-                      value={"delete_folder"}
-                    >
-                      <DeleteIcon />
-                    </Button>
-                    <input type="hidden" name="common_prefix_to_delete" value={commonPrefix.Prefix} />
-                  </Form>
+                    <Form method="post">
+                      <Button
+                        type="submit"
+                        variant="destructive"
+                        className={"p-0"}
+                        name="_action"
+                        value={"delete_folder"}
+                      >
+                        <DeleteIcon />
+                      </Button>
+                      <input type="hidden" name="common_prefix_to_delete" value={content.Key} />
+                    </Form>
+                  </div>
                 </div>
               );
-            })}
-
-            <div className="flex flex-col gap-4">
-              {loaderData.listResult.Contents?.map((content, index) => {
-                if (content.Size > 0) {
-                  return (
-                    <div key={index} className="flex flex-col gap-2 rounded shadow-md">
-                      <img
-                        width={"100%"}
-                        height={"auto"}
-                        alt="uploaded by user"
-                        src={loaderData.s3Endpoint + "/" + loaderData.s3BucketName + "/" + content.Key}
-                      />
-
-                      <div className="flex w-full items-center justify-between text-center">
-                        <div className="flex items-center gap-2">
-                          <Button
-                            className={"p-1 px-2"}
-                            onPress={() => {
-                              void navigator.clipboard.writeText(
-                                createImageTag(loaderData.s3Endpoint, loaderData.s3BucketName, content.Key),
-                              );
-                            }}
-                          >
-                            <div className="flex items-center gap-2">
-                              <CopyIcon />
-                              Copy
-                            </div>
-                          </Button>
-                          <div>{content.Key.replace(loaderData.prefix, "")}</div>
-                        </div>
-                        <Form method="post">
-                          <Button
-                            type="submit"
-                            variant="destructive"
-                            className={"p-0"}
-                            name="_action"
-                            value={"delete_folder"}
-                          >
-                            <DeleteIcon />
-                          </Button>
-                          <input type="hidden" name="common_prefix_to_delete" value={content.Key} />
-                        </Form>
-                      </div>
-                    </div>
-                  );
-                } else return null;
-              })}
-            </div>
-          </div>
+            } else return null;
+          })}
         </div>
       </div>
     </div>

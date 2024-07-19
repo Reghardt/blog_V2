@@ -43,6 +43,8 @@ export default function Write() {
   const [date, setDate] = useState(sqliteDateToCalendarDate(loaderData.article.created_at));
   const [mobileZLevels, setMobileZLevels] = useState<[number, number, number, number]>([3, 2, 1, 0]);
 
+  const [isMinimized, setIsMinimized] = useState(true);
+
   function incMobileZLevel(index: number) {
     setMobileZLevels(
       produce(mobileZLevels, (draft) => {
@@ -63,138 +65,8 @@ export default function Write() {
   return (
     <>
       <div className="hidden h-screen flex-col lg:flex">
-        <div className="flex h-8 bg-gray-200">
-          <Link
-            to=".."
-            relative="path"
-            unstable_viewTransition
-            className="pressed:bg-blue-800 flex w-12 items-center justify-center bg-blue-600 text-sm text-white hover:bg-blue-700"
-          >
-            Back
-          </Link>
-          <Button
-            className={"rounded-none py-1"}
-            onPress={() => {
-              saveArticle();
-            }}
-          >
-            Save
-          </Button>
-          <input
-            className="px-2"
-            type="text"
-            value={articleTitle}
-            onChange={(e) => {
-              setArticleTitle(e.target.value);
-            }}
-          ></input>
-
-          <div className="flex items-center gap-2 px-2">
-            <input
-              className="h-5 w-5"
-              type="checkbox"
-              id="publish"
-              checked={Boolean(published)}
-              onChange={(e) => {
-                setPublished(+e.target.checked);
-              }}
-            />
-            <label htmlFor="publish">Publish</label>
-          </div>
-
-          <DatePicker
-            value={date}
-            onChange={(newDate) => {
-              setDate(newDate);
-            }}
-          />
-        </div>
-
-        <div className="flex flex-1 overflow-hidden">
-          <div className="w-[50%] bg-gray-100" ref={editorRef}>
-            <textarea
-              className="h-full w-full bg-gray-800 p-1 text-white"
-              defaultValue={loaderData.article.content}
-              onChange={(c) => {
-                setArticleContent(c.target.value);
-              }}
-            />
-          </div>
-
-          <div className="w-[50%] overflow-auto">
-            <Article
-              article={{
-                id: loaderData.article.id,
-                created_at: loaderData.article.created_at,
-                title: articleTitle,
-                content: articleContent,
-                published: published,
-                views: loaderData.article.views,
-              }}
-            />
-          </div>
-        </div>
-        <Outlet />
-      </div>
-
-      <div className="lg:hidden">
-        <div className="h-[5svh]">
-          <Button
-            onPress={() => {
-              incMobileZLevel(0);
-            }}
-          >
-            Edit
-          </Button>
-          <Button
-            onPress={() => {
-              incMobileZLevel(1);
-            }}
-          >
-            View
-          </Button>
-
-          <Button
-            onPress={() => {
-              incMobileZLevel(2);
-            }}
-          >
-            Options
-          </Button>
-
-          <Button
-            onPress={() => {
-              incMobileZLevel(3);
-            }}
-          >
-            Images
-          </Button>
-        </div>
-
-        <div className="overflow-hidden">
-          <textarea
-            className="absolute h-[95svh] w-full overflow-auto bg-gray-700 p-1 text-white"
-            style={{ zIndex: mobileZLevels[0] }}
-            defaultValue={loaderData.article.content}
-            onChange={(c) => {
-              setArticleContent(c.target.value);
-            }}
-          />
-
-          <div className="absolute h-[95svh] w-full overflow-auto bg-white" style={{ zIndex: mobileZLevels[1] }}>
-            <Article
-              article={{
-                id: loaderData.article.id,
-                created_at: loaderData.article.created_at,
-                title: articleTitle,
-                content: articleContent,
-                published: published,
-                views: loaderData.article.views,
-              }}
-            />
-          </div>
-
-          <div className="absolute h-[95svh] w-full bg-white" style={{ zIndex: mobileZLevels[2] }}>
+        <div className="flex h-8 justify-between bg-gray-200">
+          <div className="flex">
             <Link
               to=".."
               relative="path"
@@ -241,8 +113,158 @@ export default function Write() {
             />
           </div>
 
+          <Button
+            className={"rounded-none py-1"}
+            onPress={() => {
+              setIsMinimized(!isMinimized);
+            }}
+          >
+            Images
+          </Button>
+        </div>
+
+        <div className="flex flex-1 overflow-hidden">
+          <div className="w-[50%] bg-gray-100" ref={editorRef}>
+            <textarea
+              className="h-full w-full bg-gray-800 p-1 text-white"
+              defaultValue={loaderData.article.content}
+              onChange={(c) => {
+                setArticleContent(c.target.value);
+              }}
+            />
+          </div>
+
+          <div className="w-[50%] overflow-auto">
+            <Article
+              article={{
+                id: loaderData.article.id,
+                created_at: loaderData.article.created_at,
+                title: articleTitle,
+                content: articleContent,
+                published: published,
+                views: loaderData.article.views,
+              }}
+            />
+          </div>
+        </div>
+
+        <div className="absolute right-2 top-8 h-[96%] w-96">
+          <Outlet context={{ isMinimized: isMinimized }} />
+        </div>
+      </div>
+
+      <div className="lg:hidden">
+        <div className="h-[5svh]">
+          <Button
+            onPress={() => {
+              incMobileZLevel(0);
+            }}
+          >
+            Edit
+          </Button>
+          <Button
+            onPress={() => {
+              incMobileZLevel(1);
+            }}
+          >
+            View
+          </Button>
+
+          <Button
+            onPress={() => {
+              incMobileZLevel(2);
+            }}
+          >
+            Options
+          </Button>
+
+          <Button
+            onPress={() => {
+              incMobileZLevel(3);
+              setIsMinimized(false);
+            }}
+          >
+            Images
+          </Button>
+        </div>
+
+        <div className="overflow-hidden">
+          <textarea
+            className="absolute h-[95svh] w-full overflow-auto bg-gray-700 p-1 text-white"
+            style={{ zIndex: mobileZLevels[0] }}
+            defaultValue={loaderData.article.content}
+            onChange={(c) => {
+              setArticleContent(c.target.value);
+            }}
+          />
+
+          <div className="absolute h-[95svh] w-full overflow-auto bg-white" style={{ zIndex: mobileZLevels[1] }}>
+            <Article
+              article={{
+                id: loaderData.article.id,
+                created_at: loaderData.article.created_at,
+                title: articleTitle,
+                content: articleContent,
+                published: published,
+                views: loaderData.article.views,
+              }}
+            />
+          </div>
+
+          <div
+            className="absolute flex h-[95svh] w-full flex-col gap-2 bg-white p-2"
+            style={{ zIndex: mobileZLevels[2] }}
+          >
+            <Link
+              to=".."
+              relative="path"
+              unstable_viewTransition
+              className="pressed:bg-blue-800 flex w-12 items-center justify-center bg-blue-600 p-1 text-sm text-white hover:bg-blue-700"
+            >
+              Back
+            </Link>
+
+            <input
+              className="rounded border-2 border-gray-300 px-2"
+              type="text"
+              value={articleTitle}
+              onChange={(e) => {
+                setArticleTitle(e.target.value);
+              }}
+            ></input>
+
+            <DatePicker
+              value={date}
+              onChange={(newDate) => {
+                setDate(newDate);
+              }}
+            />
+
+            <div className="flex items-center gap-2 px-2">
+              <input
+                className="h-5 w-5"
+                type="checkbox"
+                id="publish"
+                checked={Boolean(published)}
+                onChange={(e) => {
+                  setPublished(+e.target.checked);
+                }}
+              />
+              <label htmlFor="publish">Publish</label>
+            </div>
+
+            <Button
+              className={"rounded-none py-1"}
+              onPress={() => {
+                saveArticle();
+              }}
+            >
+              Save
+            </Button>
+          </div>
+
           <div className="absolute h-[95svh] w-full bg-white" style={{ zIndex: mobileZLevels[3] }}>
-            <Outlet context={{ test: true }} />
+            <Outlet context={{ isMinimized: isMinimized }} />
           </div>
         </div>
       </div>
