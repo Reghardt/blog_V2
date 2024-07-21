@@ -1,7 +1,6 @@
 import { DeleteObjectCommand, ListObjectsV2Command, PutObjectCommand } from "@aws-sdk/client-s3";
 import { ActionFunctionArgs, json, LoaderFunctionArgs } from "@remix-run/node";
-import { Form, useLoaderData, useOutletContext, useSearchParams } from "@remix-run/react";
-import { useState } from "react";
+import { Form, useFetcher, useLoaderData, useOutletContext, useSearchParams } from "@remix-run/react";
 import invariant from "tiny-invariant";
 import { z } from "zod";
 
@@ -10,8 +9,6 @@ import CreateFolderIcon from "~/components/icons/createFolderIcon";
 import DeleteIcon from "~/components/icons/deleteIcon";
 import FolderIcon from "~/components/icons/folderIcon";
 import LeftArrowIcon from "~/components/icons/leftArrowIcon";
-import MinusIcon from "~/components/icons/MinusIcon";
-import PlusIcon from "~/components/icons/plusIcon";
 import UploadIcon from "~/components/icons/uploadIcon";
 import { Button } from "~/components/spectrum/Button";
 import { ZFormFileInputSchema } from "~/schemas/formFileInputSchema";
@@ -49,21 +46,12 @@ export default function FileBrowser() {
   const [, setSearchParams] = useSearchParams();
   // const [isMinimized, setIsMinimized] = useState(true);
 
+  const uploadImageFetcher = useFetcher();
+  const createFolderFetcher = useFetcher();
+  const deleteFileOrFolderFetcher = useFetcher();
+
   if (isMinimized) {
-    return (
-      <div className="fixed right-0 top-0 flex h-8 justify-end">
-        {/* <Button
-          className={"flex h-8 w-12 items-center justify-center rounded-none p-0"}
-          onPress={() => {
-            setIsMinimized(!isMinimized);
-          }}
-        >
-          <div>
-            <PlusIcon />
-          </div>
-        </Button> */}
-      </div>
-    );
+    return <></>;
   }
 
   return (
@@ -90,7 +78,7 @@ export default function FileBrowser() {
 
         <div>Path: {loaderData.prefix ? loaderData.prefix : ""}</div>
 
-        <Form
+        <uploadImageFetcher.Form
           method="post"
           encType="multipart/form-data"
           className="border-1 flex flex-col gap-2 rounded border border-blue-400 p-2 px-2"
@@ -102,9 +90,12 @@ export default function FileBrowser() {
               Upload
             </div>
           </Button>
-        </Form>
+        </uploadImageFetcher.Form>
 
-        <Form method="post" className="border-1 flex flex-col gap-2 rounded border border-blue-400 p-2">
+        <createFolderFetcher.Form
+          method="post"
+          className="border-1 flex flex-col gap-2 rounded border border-blue-400 p-2"
+        >
           <input className="border" required type="text" name="folder_name" />
           <Button name="_action" value={"create_folder"} type="submit" className={"p-1 px-2"}>
             <div className="flex items-center gap-2">
@@ -112,7 +103,7 @@ export default function FileBrowser() {
               Create folder
             </div>
           </Button>
-        </Form>
+        </createFolderFetcher.Form>
         {loaderData.listResult.CommonPrefixes?.map((commonPrefix, index) => {
           return (
             <div key={index} className="flex items-center gap-2">
@@ -130,12 +121,12 @@ export default function FileBrowser() {
                   {commonPrefix.Prefix.replace(loaderData.prefix, "")}
                 </div>
               </Button>
-              <Form method="post">
-                <Button type="submit" variant="destructive" className={"p-0"} name="_action" value={"delete_folder"}>
+              <deleteFileOrFolderFetcher.Form method="post">
+                <Button type="submit" variant="destructive" className={"p-0"} name="_action" value={"delete_object"}>
                   <DeleteIcon />
                 </Button>
                 <input type="hidden" name="common_prefix_to_delete" value={commonPrefix.Prefix} />
-              </Form>
+              </deleteFileOrFolderFetcher.Form>
             </div>
           );
         })}
@@ -175,7 +166,7 @@ export default function FileBrowser() {
                         variant="destructive"
                         className={"p-0"}
                         name="_action"
-                        value={"delete_folder"}
+                        value={"delete_object"}
                       >
                         <DeleteIcon />
                       </Button>
@@ -213,7 +204,7 @@ export async function action({ request }: ActionFunctionArgs) {
         ContentLength: 0,
       }),
     );
-  } else if (action === "delete_folder") {
+  } else if (action === "delete_object") {
     invariant(process.env.AWS_S3_BUCKET_NAME, "AWS_S3_BUCKET_NAME undefined");
 
     const commonPrefixToDelete = z.string().parse(formData.get("common_prefix_to_delete"));
