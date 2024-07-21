@@ -154,8 +154,9 @@ export default function Write() {
       </div>
 
       <div className="lg:hidden">
-        <div className="h-[5svh]">
+        <div className="grid h-[5svh] grid-cols-4">
           <Button
+            className={"rounded-none"}
             onPress={() => {
               incMobileZLevel(0);
             }}
@@ -163,6 +164,7 @@ export default function Write() {
             Edit
           </Button>
           <Button
+            className={"rounded-none"}
             onPress={() => {
               incMobileZLevel(1);
             }}
@@ -171,14 +173,16 @@ export default function Write() {
           </Button>
 
           <Button
+            className={"rounded-none"}
             onPress={() => {
               incMobileZLevel(2);
             }}
           >
-            Options
+            Menu
           </Button>
 
           <Button
+            className={"rounded-none"}
             onPress={() => {
               incMobileZLevel(3);
               setIsMinimized(false);
