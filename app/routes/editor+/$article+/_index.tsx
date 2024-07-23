@@ -1,14 +1,14 @@
 import { DeleteObjectCommand, ListObjectsV2Command, PutObjectCommand } from "@aws-sdk/client-s3";
 import { ActionFunctionArgs, json, LoaderFunctionArgs } from "@remix-run/node";
-import { Form, useFetcher, useLoaderData, useOutletContext, useSearchParams } from "@remix-run/react";
+import { useFetcher, useLoaderData, useOutletContext, useSearchParams } from "@remix-run/react";
 import invariant from "tiny-invariant";
 import { z } from "zod";
 
+import ArrowTurnLeftUpIcon from "~/components/icons/arrowTurnLeftUpIcon";
 import CopyIcon from "~/components/icons/copyIcon";
 import CreateFolderIcon from "~/components/icons/createFolderIcon";
 import DeleteIcon from "~/components/icons/deleteIcon";
 import FolderIcon from "~/components/icons/folderIcon";
-import LeftArrowIcon from "~/components/icons/leftArrowIcon";
 import UploadIcon from "~/components/icons/uploadIcon";
 import { Button } from "~/components/spectrum/Button";
 import { ZFormFileInputSchema } from "~/schemas/formFileInputSchema";
@@ -48,35 +48,38 @@ export default function FileBrowser() {
 
   const uploadImageFetcher = useFetcher();
   const createFolderFetcher = useFetcher();
-  const deleteFileOrFolderFetcher = useFetcher();
+  const deleteFolderFetcher = useFetcher();
+  const deleteFileFetcher = useFetcher();
 
   if (isMinimized) {
     return <></>;
   }
 
+  console.log(loaderData.prefix);
+
   return (
     <div className="h-full w-full overflow-auto bg-white shadow-xl">
       <div className="flex flex-col gap-2 p-2">
-        <div>File browser</div>
+        <div className="flex items-center gap-2">
+          {loaderData.prefix !== "" ? (
+            <Button
+              className={"p-1 px-2"}
+              onPress={() => {
+                setSearchParams((prev) => {
+                  prev.set("prefix", moveUpOneDirectory(loaderData.prefix));
+                  return prev;
+                });
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <ArrowTurnLeftUpIcon />
+                Up
+              </div>
+            </Button>
+          ) : null}
 
-        <div>
-          <Button
-            className={"p-1 px-2"}
-            onPress={() => {
-              setSearchParams((prev) => {
-                prev.set("prefix", moveUpOneDirectory(loaderData.prefix));
-                return prev;
-              });
-            }}
-          >
-            <div className="flex items-center gap-2">
-              <LeftArrowIcon />
-              Back
-            </div>
-          </Button>
+          <div>Path: {loaderData.prefix ? loaderData.prefix : ""}</div>
         </div>
-
-        <div>Path: {loaderData.prefix ? loaderData.prefix : ""}</div>
 
         <uploadImageFetcher.Form
           method="post"
@@ -121,12 +124,12 @@ export default function FileBrowser() {
                   {commonPrefix.Prefix.replace(loaderData.prefix, "")}
                 </div>
               </Button>
-              <deleteFileOrFolderFetcher.Form method="post">
+              <deleteFolderFetcher.Form method="post">
                 <Button type="submit" variant="destructive" className={"p-0"} name="_action" value={"delete_object"}>
                   <DeleteIcon />
                 </Button>
                 <input type="hidden" name="common_prefix_to_delete" value={commonPrefix.Prefix} />
-              </deleteFileOrFolderFetcher.Form>
+              </deleteFolderFetcher.Form>
             </div>
           );
         })}
@@ -160,7 +163,7 @@ export default function FileBrowser() {
                       </Button>
                       <div>{content.Key.replace(loaderData.prefix, "")}</div>
                     </div>
-                    <Form method="post">
+                    <deleteFileFetcher.Form method="post">
                       <Button
                         type="submit"
                         variant="destructive"
@@ -171,7 +174,7 @@ export default function FileBrowser() {
                         <DeleteIcon />
                       </Button>
                       <input type="hidden" name="common_prefix_to_delete" value={content.Key} />
-                    </Form>
+                    </deleteFileFetcher.Form>
                   </div>
                 </div>
               );

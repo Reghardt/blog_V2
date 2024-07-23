@@ -1,40 +1,33 @@
-# Welcome to Remix!
+# Blog with online editor and image gallery
 
-- 📖 [Remix docs](https://remix.run/docs)
+## Desktop Editor
 
-## Development
+<img
+    src="https://fly.storage.tigris.dev/rem-blog/New%20Blog/blog_editor.png" 
+    alt="Description" 
+    width="100%"
+    style="margin: auto;"
+/>
 
-Run the dev server:
+## Mobile Editor
 
-```shellscript
-npm run dev
-```
+<img
+    src="https://fly.storage.tigris.dev/rem-blog/New%20Blog/mobile_responsive.png" 
+    alt="Description" 
+    width="40%"
+/>
 
-## Deployment
+## Image gallery
 
-First, build your app for production:
+The Image gallery leverages AWS S3 and allows image uploads, previews, nested folder creation, deletions and link copying to be used in the markdown.
 
-```sh
-npm run build
-```
+<img
+    src="https://fly.storage.tigris.dev/rem-blog/New%20Blog/image_gallery.png" 
+    alt="Description" 
+    width="100%"
+    style="margin: auto;"
+/>
 
-Then run the app in production mode:
+## A Blog about the blog written in the blog
 
-```sh
-npm start
-```
-
-Now you'll need to pick a host to deploy it to.
-
-### DIY
-
-If you're familiar with deploying Node applications, the built-in Remix app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-- `build/server`
-- `build/client`
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever css framework you prefer. See the [Vite docs on css](https://vitejs.dev/guide/features.html#css) for more information.
+[https://rem-blog.fly.dev/editor/9](https://rem-blog.fly.dev/editor/9)
