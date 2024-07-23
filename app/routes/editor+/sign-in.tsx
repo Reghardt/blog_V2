@@ -53,6 +53,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
       throw redirect("/editor", await commitAdminSession(adminSession));
     }
+    return null;
   } else {
     return null;
   }
