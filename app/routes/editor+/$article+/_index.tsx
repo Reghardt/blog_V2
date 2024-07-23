@@ -13,12 +13,16 @@ import UploadIcon from "~/components/icons/uploadIcon";
 import { Button } from "~/components/spectrum/Button";
 import { ZFormFileInputSchema } from "~/schemas/formFileInputSchema";
 import { ZListObjectsCommandV2Response } from "~/schemas/listObjectsCommandV2Response";
+import { getAdminSession, getAdminSessionData } from "~/services/adminSession.server";
 import { S3Service } from "~/services/S3/S3Service.server";
 import { createImageTag } from "~/utils/createImageTag";
 import { moveUpOneDirectory } from "~/utils/moveUpOneDirectory";
 import { uploadFile } from "~/utils/uploadFile";
 
 export async function loader({ request }: LoaderFunctionArgs) {
+  const session = await getAdminSession(request);
+  await getAdminSessionData(session);
+
   const prefix = new URL(request.url).searchParams.get("prefix") ?? "";
 
   const listResult = ZListObjectsCommandV2Response.parse(

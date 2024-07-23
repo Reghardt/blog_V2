@@ -19,7 +19,7 @@
 
 ## Image gallery
 
-The Image gallery leverages AWS S3 and allows image uploads, previews, nested folder creation, deletions and link copying to be used in the markdown.
+The Image gallery uses AWS S3 or fly.io's [Tigris](https://fly.io/docs/reference/tigris/) and allows image uploads, previews, nested folder creation, deletions and link copying to be used in the markdown.
 
 <img
     src="https://fly.storage.tigris.dev/rem-blog/New%20Blog/image_gallery.png" 

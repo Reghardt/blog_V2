@@ -1,9 +1,5 @@
-import {
-  Session,
-  createCookie,
-  createCookieSessionStorage,
-  redirect,
-} from "@remix-run/node";
+import { Session, createCookie, createCookieSessionStorage, redirect } from "@remix-run/node";
+import invariant from "tiny-invariant";
 import { z } from "zod";
 
 export interface AdminSessionData {
@@ -15,39 +11,39 @@ export interface AdminSessionFlashData {
   infoMsg: string;
 }
 
+invariant(process.env.ADMIN_SESSION_SECRET, "ADMIN_SESSION_SECRET undefined");
+
 export const adminAuthCookie = createCookie("__admin_session", {
   // domain: ""
   httpOnly: true,
   maxAge: 60 * 60 * 24 * 3, //3 days
   path: "/",
   sameSite: "lax",
-  secrets: ["secret"],
+  secrets: [process.env.ADMIN_SESSION_SECRET],
   secure: true,
 });
 
-const { getSession, commitSession, destroySession } =
-  createCookieSessionStorage<AdminSessionData, AdminSessionFlashData>({
-    cookie: adminAuthCookie,
-  });
+const { getSession, commitSession, destroySession } = createCookieSessionStorage<
+  AdminSessionData,
+  AdminSessionFlashData
+>({
+  cookie: adminAuthCookie,
+});
 
 async function getAdminSession(request: Request) {
   const session = await getSession(request.headers.get("Cookie"));
   return session;
 }
 
-// async function commitAdminSession(
-//   session: Session<AdminSessionData, AdminSessionFlashData>,
-// ) {
-//   return {
-//     headers: {
-//       "Set-Cookie": await commitSession(session),
-//     },
-//   };
-// }
+async function commitAdminSession(session: Session<AdminSessionData, AdminSessionFlashData>) {
+  return {
+    headers: {
+      "Set-Cookie": await commitSession(session),
+    },
+  };
+}
 
-async function destroyAdminSession(
-  session: Session<AdminSessionData, AdminSessionFlashData>,
-) {
+async function destroyAdminSession(session: Session<AdminSessionData, AdminSessionFlashData>) {
   return {
     headers: {
       "Set-Cookie": await destroySession(session),
@@ -55,11 +51,7 @@ async function destroyAdminSession(
   };
 }
 
-export {
-  getAdminSession,
-  commitSession as commitAdminSession,
-  destroyAdminSession,
-};
+export { getAdminSession, commitAdminSession, destroyAdminSession };
 
 /**
  * @example throw await createThrowableAdminErrorMsg(session, "Error message", "url");
@@ -99,9 +91,7 @@ export async function createThrowableAdminInfoMsg(
  * @param session
  * @returns
  */
-export async function getAdminSessionData(
-  session: Session<AdminSessionData, AdminSessionFlashData>,
-) {
+export async function getAdminSessionData(session: Session<AdminSessionData, AdminSessionFlashData>) {
   try {
     return z
       .object({
@@ -121,13 +111,9 @@ export async function getAdminSessionData(
   }
 }
 
-export function getAdminSessionFlashData(
-  session: Session<AdminSessionData, AdminSessionFlashData>,
-) {
-  return z
-    .object({ errorMsg: z.string().optional(), infoMsg: z.string().optional() })
-    .parse({
-      errorMsg: session.get("errorMsg"),
-      infoMsg: session.get("infoMsg"),
-    });
+export function getAdminSessionFlashData(session: Session<AdminSessionData, AdminSessionFlashData>) {
+  return z.object({ errorMsg: z.string().optional(), infoMsg: z.string().optional() }).parse({
+    errorMsg: session.get("errorMsg"),
+    infoMsg: session.get("infoMsg"),
+  });
 }

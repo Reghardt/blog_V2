@@ -55,10 +55,7 @@ module.exports = {
       },
       rules: {
         // TODO: What are these rules?
-        "react/jsx-no-leaked-render": [
-          "warn",
-          { validStrategies: ["ternary"] },
-        ],
+        "react/jsx-no-leaked-render": ["warn", { validStrategies: ["ternary"] }],
       },
     },
 
@@ -80,8 +77,8 @@ module.exports = {
       },
       extends: [
         "plugin:@typescript-eslint/strict-type-checked",
-        "plugin:@typescript-eslint/stylistic-type-checked", // TODO: What does this do?
-        "plugin:import/recommended",
+        // "plugin:@typescript-eslint/stylistic-type-checked", // TODO: What does this do?
+        "plugin:import/strict",
         "plugin:import/typescript",
         "prettier", // TODO: Why add prettier here?
       ],

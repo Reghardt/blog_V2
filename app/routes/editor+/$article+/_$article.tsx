@@ -12,12 +12,16 @@ import { DatePicker } from "~/components/spectrum/DatePicker";
 import { getArticleById } from "~/db/getArticleById";
 import { updateArticleById } from "~/db/updateArticleById";
 import { ZListObjectsCommandV2Response } from "~/schemas/listObjectsCommandV2Response";
+import { getAdminSession, getAdminSessionData } from "~/services/adminSession.server";
 import { S3Service } from "~/services/S3/S3Service.server";
 import { calendarDateToSqliteDate } from "~/utils/calendarDateToSqliteDate";
 import { sqliteDateToCalendarDate } from "~/utils/sqliteDateToCalendarDate";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
-  const article_id = params.article;
+  const session = await getAdminSession(request);
+  await getAdminSessionData(session);
+
+  const article_id = params["article"];
   invariant(article_id, "article id undefined");
   const article = await getArticleById(article_id);
 
@@ -283,7 +287,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const published = z.coerce.number().min(0).max(1).parse(body.get("published"));
   const created_at = z.string().parse(body.get("created_at"));
 
-  const articleId = params.article;
+  const articleId = params["article"];
   invariant(articleId, "article id undefined");
 
   await updateArticleById(articleId, title, content, published, created_at);

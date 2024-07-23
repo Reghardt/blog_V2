@@ -7,5 +7,6 @@ declare namespace NodeJS {
     readonly AWS_SECRET_ACCESS_KEY?: string;
     readonly AWS_S3_BUCKET_NAME?: string;
     readonly AWS_S3_ENDPOINT?: string;
+    readonly ADMIN_SESSION_SECRET?: string;
   }
 }
