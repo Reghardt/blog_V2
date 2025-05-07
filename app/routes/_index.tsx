@@ -5,7 +5,7 @@ import EyeIcon from "~/components/icons/eyeIcon";
 import { getArticles } from "~/db/getArticles";
 
 export const meta: MetaFunction = () => {
-  return [{ title: "Reghardt's Blog" }, { name: "description", content: "Welcome to Remix!" }];
+  return [{ title: "Reghardt's Blog" }, { name: "description", content: "" }];
 };
 
 export async function loader() {
